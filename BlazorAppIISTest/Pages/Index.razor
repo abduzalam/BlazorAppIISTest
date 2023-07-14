@@ -1,0 +1,43 @@
+﻿@page "/"
+@using BlazorAppIISTest.General;
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AuthenticateUser AuthenticateUser
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+@if (message != null)
+{
+    <br>
+    @message
+}
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+
+    private bool hasAccess = false;
+    private string? userName;
+    private string? message;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
+            {
+                userName = AuthenticateUser.GetUsernameWithoutDomain(user.Identity.Name);
+                hasAccess = await AuthenticateUser.CheckAccessAsync(userName);
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"AdditionalInfo : ErrorMessage :{ex.Message}, StackTrace: {ex.StackTrace} .";
+            hasAccess = false;
+        }
+    }
+}
